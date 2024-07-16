@@ -642,8 +642,8 @@ class RepNCSPELAN4(nn.Module):
         self.c = c3//2
         self.cv1 = Conv(c1, c3, 1, 1)
         # Change RepNCSP with GAM for experiment:
-        self.cv2 = nn.Sequential(GAMAttention(c3//2, c4), Conv(c4, c4, 3, 1))
-        self.cv3 = nn.Sequential(GAMAttention(c4, c4), Conv(c4, c4, 3, 1))
+        self.cv2 = nn.Sequential(GAMAttention(c3//2, c4, rate=1), Conv(c4, c4, 3, 1))
+        self.cv3 = nn.Sequential(GAMAttention(c4, c4, rate=1), Conv(c4, c4, 3, 1))
         self.cv4 = Conv(c3+(2*c4), c2, 1, 1)
 
     def forward(self, x):
