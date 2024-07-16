@@ -9,6 +9,7 @@ from utils.metrics import bbox_iou
 from utils.tal.anchor_generator import dist2bbox, make_anchors, bbox2dist
 from utils.tal.assigner import TaskAlignedAssigner
 from utils.torch_utils import de_parallel
+import numpy as np
 
 
 def smooth_BCE(eps=0.1):  # https://github.com/ultralytics/yolov3/issues/238#issuecomment-598028441
@@ -103,6 +104,13 @@ class BboxLoss(nn.Module):
         return (loss_left + loss_right).mean(-1, keepdim=True)
 
 
+def convert_to_tensor(x):
+    """Convert a list or numpy array to a tensor without changing its shape."""
+    if isinstance(x, list):
+        # Convert the list to a numpy array and then to a tensor
+        x = np.array(x)
+    return torch.tensor(x)
+
 class ComputeLoss:
     # Compute losses
     def __init__(self, model, use_dfl=True):
@@ -165,7 +173,15 @@ class ComputeLoss:
     def __call__(self, p, targets, img=None, epoch=0):
         loss = torch.zeros(3, device=self.device)  # box, cls, dfl
         feats = p[1] if isinstance(p, tuple) else p
-        feats = [torch.tensor(f) if isinstance(f, list) else f for f in feats]
+        
+        # Print types before conversion
+        print("Before conversion:")
+        for i, f in enumerate(feats):
+            print(f"feats[{i}] type: {type(f)}")
+
+        # Ensure feats is a list of tensors
+        feats = [convert_to_tensor(f) if not isinstance(f, torch.Tensor) else f for f in feats]
+        
         pred_distri, pred_scores = torch.cat([xi.view(feats[0].shape[0], self.no, -1) for xi in feats], 2).split(
             (self.reg_max * 4, self.nc), 1)
         pred_scores = pred_scores.permute(0, 2, 1).contiguous()
