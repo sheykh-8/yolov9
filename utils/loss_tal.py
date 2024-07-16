@@ -105,10 +105,6 @@ class BboxLoss(nn.Module):
 
 
 def convert_to_tensor(x):
-    """Convert a list or numpy array to a tensor without changing its shape."""
-    if isinstance(x, list):
-        # Convert the list to a numpy array and then to a tensor
-        x = np.array(x)
     return torch.tensor(x)
 
 class ComputeLoss:
