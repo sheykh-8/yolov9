@@ -598,14 +598,31 @@ class ELAN1(nn.Module):
         return self.cv4(torch.cat(y, 1))
         
         
+### New C3C2 Module:
+### Identical interface to RepCSP so it should be easily replaceable:
+class C3C2(nn.Module):
+    # CSP Bottleneck with 3 convolutions
+    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
+        super().__init__()
+        c_ = int(c2 * e)  # hidden channels
+        self.conv = nn.Conv2d(c1, c_, 1, 1, autopad(1, None), groups=g, bias=False)
+        self.bn = nn.BatchNorm2d(c_)
+        self.act = nn.SiLU()
+        self.cv1 = Conv(2 * c_, c2, 1, act=nn.Mish())
+        self.m = nn.Sequential(*(Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
+
+    def forward(self, x):
+        y = self.conv(x)
+        return self.cv1(torch.cat((self.m(self.act(self.bn(y))), y), dim=1))
+        
 class RepNCSPELAN4(nn.Module):
     # csp-elan
     def __init__(self, c1, c2, c3, c4, c5=1):  # ch_in, ch_out, number, shortcut, groups, expansion
         super().__init__()
         self.c = c3//2
         self.cv1 = Conv(c1, c3, 1, 1)
-        self.cv2 = nn.Sequential(RepNCSP(c3//2, c4, c5), Conv(c4, c4, 3, 1))
-        self.cv3 = nn.Sequential(RepNCSP(c4, c4, c5), Conv(c4, c4, 3, 1))
+        self.cv2 = nn.Sequential(C3C2(c3//2, c4, c5), Conv(c4, c4, 3, 1))
+        self.cv3 = nn.Sequential(C3C2(c4, c4, c5), Conv(c4, c4, 3, 1))
         self.cv4 = Conv(c3+(2*c4), c2, 1, 1)
 
     def forward(self, x):
