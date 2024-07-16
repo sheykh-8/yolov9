@@ -626,6 +626,7 @@ class GAMAttention(nn.Module):
         x_spatial_att = self.spatial_attention(x).sigmoid()
         x_spatial_att=channel_shuffle(x_spatial_att,4) #last shuffle 
         out = x * x_spatial_att
+        print(f"type of GAMAttention output: {type(out)}")
         return out  
 
 def channel_shuffle(x, groups=2):   ##shuffle channel  # AIEAGNY
