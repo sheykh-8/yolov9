@@ -1,0 +1,21 @@
+names:
+- airliner
+- boat
+- bus
+- car
+- long_vehicle
+- other
+- pushback_truck
+- stair_truck
+- truck
+- van
+nc: 10
+roboflow:
+  license: CC BY 4.0
+  project: sat-knxi4
+  url: https://universe.roboflow.com/afshin-eg77l/sat-knxi4/dataset/1
+  version: 1
+  workspace: afshin-eg77l
+test: ./satellitedata/test/images
+train: ./satellitedata/train/images
+val: ./satellitedata/valid/images
